@@ -1,0 +1,24 @@
+---
+title: "Messages test"
+author: "Stefano Coretta"
+date: "5/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(logger)
+layout_simple <- function(level, msg, ...) {
+  glue::glue("------------------------------\n\t{msg}", .trim = FALSE)
+}
+log_layout(layout_simple)
+```
+
+
+```{r cars}
+for (i in 1:10) {
+  log_info(i)
+  Sys.sleep(0.5)
+}
+```
+

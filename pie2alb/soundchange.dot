@@ -1,0 +1,46 @@
+
+digraph soundchange {
+  graph [overlap = true, fontsize = 10]
+  
+  node [shape = box]
+  1 [label="ī, ei"];
+  2 [label="i, r"];
+  3 [label="ai, oi, Hi, n"];
+  4 [label="e"];
+  5 [label="o, H, a"];
+  6 [label="au, Hu"];
+  7 [label="ā, ē"];
+  8 [label="ō, eu, ou"];
+  9 [label="u, r"];
+  10 [label="ū"]
+  
+  node [shape = box]
+  11 [label="i"];
+  12 [label="ɪ"];
+  13 [label="e"];
+  14 [label="ɛ"];
+  15 [label="a"];
+  16 [label="ɑ"];
+  17 [label="o"];
+  18 [label="ɔ"];
+  19 [label="ʊ"];
+  20 [label="u"]
+  
+  node [shape = box]
+  21 [label="i"];
+  22 [label="e"];
+  23 [label="a"];
+  24 [label="ve"];
+  25 [label="ye"];
+  26 [label="ua, va"];
+  27 [label="o"];
+  28 [label="ie, je, ja"];
+  29 [label="y"];
+  30 [label = "u"]
+  
+  1->11 2->12 3->13 4->14 5->15 6->16 7->17 8->18 9->19 10->20
+  
+  11->21 12->21 12->22 13->22 14->22 14->21 14->28 15->22 15->23
+  16->23 16->24 17->26 17->27 17->30 18->22 18->25 19->30 19->29
+  20->29 20->21
+}

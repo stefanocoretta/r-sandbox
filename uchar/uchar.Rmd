@@ -1,0 +1,28 @@
+---
+title: "ucharclasses example"
+author: "Stefano Coretta"
+date: 2021/01/17
+output:
+  pdf_document:
+    latex_engine: xelatex
+    keep_tex: true
+fontsize: 12pt
+header-includes:
+  - \usepackage[Latin,CJK,Devanagari]{ucharclasses}
+  - \newfontfamily{\cjkfont}{Xingkai SC}
+  - \newfontfamily{\latinfont}{Tinos}
+  - \newfontfamily{\nagarifont}{Siddhanta}
+  - \setDefaultTransitions{\latinfont}{}
+  - \setTransitionsForLatin{\latinfont}{}
+  - \setTransitionsForCJK{\cjkfont}{}
+  - \setTransitionTo{Devanagari}{\nagarifont}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+\Huge
+
+This is Latin, this is 中文, and this is देवनागरी.
+

@@ -1,0 +1,40 @@
+---
+title: "Plot sizes test"
+author: "Stefano Coretta"
+date: "4/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = here::here())
+library(tidyverse)
+```
+
+The default font size (`base_size`) is 11 pt (see `?theme_classic`).
+
+This applies to `element_text()` and `geom_text/label()`.
+
+```{r font-size}
+# A base plot.
+p <- ggplot(mtcars, aes(wt, mpg, label = rownames(mtcars)))
+
+# Add geom_text().
+p1 <- p  + geom_text()
+ggsave("plot-sizes/p1.png", p1, width = 7, height = 5)
+
+# Specify font size.
+p2 <- p + geom_text(size = 11 / .pt) + theme(text = element_text(size = 11))
+ggsave("plot-sizes/p2.png", p2, width = 7, height = 5)
+
+# p1 and p2 are the same
+```
+
+The default dpi is 300.
+Changing the dpi changes the resolution if width/height is the same.
+
+```{r set-dpi}
+ggsave("plot-sizes/p1-300.png", p1, width = 7, height = 5)
+ggsave("plot-sizes/p1-72.png", p1, width = 7, height = 5, dpi = 72)
+```
+

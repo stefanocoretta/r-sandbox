@@ -1,0 +1,561 @@
+---
+title: "Practical machine learning"
+author: "Stefano Coretta"
+date: "02/12/2017"
+output: 
+  html_document: 
+    highlight: tango
+    number_sections: yes
+    theme: yeti
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+library(kernlab)
+data(spam)
+library(ISLR)
+data(Wage)
+library(tidyverse)
+theme_set(theme_minimal())
+library(Hmisc)
+library(RANN)
+library(splines)
+data(faithful)
+data(iris)
+# library(rattle)
+library(ElemStatLearn)
+data(ozone, package = "ElemStatLearn")
+library(ElemStatLearn)
+data(prostate)
+```
+
+# Week 2
+
+## Data slicing
+
+```{r sclicing}
+inTrain <- createDataPartition(
+    y = spam$type,
+    p = 0.75,
+    list = FALSE
+)
+
+training <- spam[inTrain,]
+testing <- spam[-inTrain,]
+dim(training)
+```
+
+```{r k-fold}
+set.seed(32323)
+folds <- createFolds(
+    y = spam$type,
+    k = 10,
+    list = TRUE,
+    returnTrain = TRUE # set to FALSE for testing set
+)
+
+sapply(folds, length)
+
+folds[[1]][1:10]
+```
+
+`createFolds()` can return the training set or the testing set.
+
+```{r resampling}
+set.seed(32323)
+folds <- createResample(
+    y = spam$type,
+    times = 10,
+    list = TRUE
+)
+
+sapply(folds, length)
+
+folds[[1]][1:10]
+```
+
+```{r time-slicing}
+set.seed(32323)
+tme <- 1:1000
+folds <- createTimeSlices(
+    y = tme,
+    initialWindow = 20,
+    horizon = 10
+)
+names(folds)
+
+folds$train[[1]]
+folds$test[[1]]
+```
+
+## Training options
+
+```{r model-fit-glm}
+modelFit <- train(
+    type ~ .,
+    data = training,
+    method = "glm"
+)
+
+summary(modelFit)
+```
+
+## Plotting predictors
+
+```{r wage-partition}
+inTrain <- createDataPartition(
+    y = Wage$wage,
+    p = 0.7,
+    list = FALSE
+)
+
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+dim(training)
+dim(testing)
+```
+
+```{r feature-plot}
+featurePlot(
+    training[,c("age", "education", "jobclass")],
+    training$wage,
+    plot = "pairs"
+)
+```
+
+```{r qplot}
+qplot(age, wage, colour = jobclass, data = training)
+```
+
+```{r}
+q <- qplot(age, wage, colour = education, data = training)
+q + geom_smooth(method = "lm")
+```
+
+```{r cut2}
+cutWage <- cut2(training$wage, g = 3)
+table(cutWage)
+```
+
+```{r}
+qplot(cutWage, age, data = training, geom = c("boxplot", "jitter"))
+```
+
+```{r tables}
+t1 <- table(cutWage, training$jobclass)
+t1
+
+prop.table(t1, 1)
+```
+
+```{r density}
+qplot(wage, colour = education, data = training, geom = "density")
+```
+
+## Basic preprocessing
+
+```{r}
+inTrain <- createDataPartition(
+    y = spam$type,
+    p = 0.75,
+    list = FALSE
+)
+
+training <- spam[inTrain,]
+testing <- spam[-inTrain,]
+hist(training$capitalAve, main = "")
+```
+
+```{r standardisation}
+trainCapAve <- training$capitalAve
+trainCapAveS <- (trainCapAve - mean(trainCapAve)) / sd(trainCapAve)
+
+testCapAve <- testing$capitalAve
+testCapAveS <- (testCapAve - mean(trainCapAve)) / sd(trainCapAve)
+```
+
+```{r preProcess}
+preObj <- preProcess(
+    training[,-58],
+    method = c("center", "scale")
+)
+trainCapAveS <- predict(preObj, training[,-58])$capitalAve
+```
+
+```{r preProcess-train}
+set.seed(32323)
+modelFit <- train(
+    type ~.,
+    data = training,
+    preProcess = c("center", "scale"),
+    method = "glm"
+)
+
+modelFit
+```
+
+```{r box-cox}
+preObj <- preProcess(
+    training[,-58],
+    method = "BoxCox"
+)
+trainCapAveS <- predict(preObj, training[,-58])$capitalAve
+hist(trainCapAveS)
+qqnorm(trainCapAveS)
+```
+
+```{r knn-imputation}
+set.seed(13343)
+
+training$capAve <- training$capitalAve
+selectNA <- rbinom(dim(training)[1], size = 1, prob = 0.5) == 1
+training$capAve[selectNA] <- NA
+
+preObj <- preProcess(training[-58], method = "knnImpute")
+capAve <- predict(preObj, training[,-58])$capAve
+
+capAveTruth <- training$capitalAve
+capAveTruth <- (capAveTruth - mean(capAveTruth))/sd(capAveTruth)
+```
+
+## Covariate creation
+
+- from raw data to covariates
+- transforming existing covariates
+
+```{r}
+spam$capitalAveSq <- spam$capitalAve ^ 2
+```
+
+```{r}
+inTrain <- createDataPartition(
+    y = Wage$wage,
+    p = 0.7,
+    list = FALSE
+)
+
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+```
+
+```{r dummies}
+dummies <- dummyVars(wage ~ jobclass, data = training)
+head(predict(dummies, newdata = training))
+```
+
+```{r zero-covariates}
+nsv <- nearZeroVar(training, saveMetrics = TRUE)
+nsv
+```
+
+```{r splines}
+bsBasis <- bs(training$age, df = 3)
+
+lm1 <- lm(wage ~ bsBasis, data = training)
+
+plot(training$age, training$wage, pch = 19, cex = 0.5)
+points(training$age, predict(lm1, newdata = training), col = "red", pch = 19, cex = 0.5)
+```
+
+```{r}
+head(predict(bsBasis, age = testing$age))
+```
+
+## Preprocessing with PCA
+
+```{r}
+inTrain <- createDataPartition(
+    y = spam$type,
+    p = 0.75,
+    list = FALSE
+)
+
+training <- spam[inTrain,]
+testing <- spam[-inTrain]
+
+M <- abs(cor(training[,-58]))
+diag(M) <- 0
+which(M > 0.8, arr.ind = TRUE)
+```
+
+```{r pca}
+smallSpam <- spam[,c(34,32)]
+prComp <- prcomp(smallSpam)
+plot(prComp$x[,1], prComp$x[,2])
+```
+
+```{r pca-all}
+typeColor <- ((spam$type == "spam") * 1 + 1)
+prComp <- prcomp(log10(spam[,-58] + 1))
+plot(prComp$x[,1], prComp$x[,2], col = typeColor)
+```
+
+```{r pca-caret}
+preProc <- preProcess(log10(spam[,-58] + 1), method = "pca", pcaComp = 2)
+spamPc <- predict(preProc, log10(spam[,-58] + 1))
+plot(spamPc[,1], spamPc[,2], col = typeColor)
+```
+
+Not working!
+
+```{r}
+trainPc <- predict(preProc, log10(training[,-58] + 1))
+modelFit <- train(x = trainPc, y = training$type, method = "glm")
+```
+
+Not working!
+
+```{r eval=FALSE}
+modelFit <- train(training$type ~ ., method = "glm", preProcess = "pca", data = training)
+confusionMatrix(testing$type, predict(modelFit, testing))
+```
+
+## Predicting with regression
+
+```{r}
+set.seed(333)
+
+inTrain <- createDataPartition(faithful$waiting, p = 0.5, list = FALSE)
+
+trainFaith <- faithful[inTrain, ]
+testFaith <-  faithful[-inTrain,]
+head(trainFaith)
+```
+
+```{r lm}
+lm1 <- lm(eruptions ~ waiting, data = trainFaith)
+summary(lm1)
+```
+
+```{r lm1-plot}
+plot(trainFaith$waiting, trainFaith$eruptions)
+lines(trainFaith$waiting, lm1$fitted, lwd = 3)
+```
+
+```{r lm-predict}
+coef(lm1)[1] + coef(lm1)[2] * 80
+
+newData <- data.frame(waiting = 80)
+predict(lm1, newData)
+```
+
+```{r}
+plot(testFaith$waiting, testFaith$eruptions)
+lines(testFaith$waiting, predict(lm1, testFaith), lwd = 3)
+```
+
+Get Root Mean Standard Error for training and testing set
+
+```{r rmse}
+sqrt(sum((lm1$fitted - trainFaith$eruptions) ^ 2))
+sqrt(sum((predict(lm1, testFaith) - testFaith$eruptions) ^ 2))
+```
+
+Normally, testing set RMSE is higher than the one of training set.
+
+```{r prediction-intervals}
+pred1 <- predict(lm1, newdata = testFaith, interval = "prediction")
+ord <- order(testFaith$waiting)
+plot(testFaith$waiting, testFaith$eruptions)
+matlines(testFaith$waiting[ord], pred1[ord,], col = c(1, 2, 2), lty = c(1, 1, 1), lwd = 3)
+```
+
+```{r lm-caret}
+modFit <- train(eruptions ~ waiting, data = trainFaith, method = "lm")
+summary(modFit$finalModel)
+```
+
+## Predicting with regression: Multiple covariates
+
+```{r wage-subset}
+Wage <- subset(Wage, select = -c(logwage))
+
+inTrain <- createDataPartition(
+    Wage$wage,
+    p = 0.7,
+    list = FALSE
+)
+
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+```
+
+```{r}
+qplot(age, wage, colour = jobclass, data = training)
+qplot(age, wage, colour = education, data = training)
+```
+
+```{r}
+modFit <- train(wage ~ age + education + jobclass, method = "lm", data = training)
+
+finalMod <- modFit$finalModel
+print(finalMod)
+summary(finalMod)
+```
+
+```{r}
+plot(finalMod, 1)
+plot(finalMod$residuals)
+```
+
+```{r}
+pred <- predict(modFit, testing)
+qplot(wage, pred, colour = year, data = testing)
+```
+
+```{r}
+modFitAll <- train(wage ~ ., data = testing, method = "lm")
+pred <- predict(modFitAll, testing)
+qplot(wage, pred, data = testing)
+```
+
+# Week 3
+
+## Predicting with trees
+
+```{r iris}
+table(iris$Species)
+```
+
+```{r iris-train}
+inTrain <- createDataPartition(
+    y = iris$Species,
+    p = 0.7,
+    list = FALSE
+)
+
+training <- iris[inTrain,]
+testing <- iris[-inTrain,]
+```
+
+```{r iris-species-plot}
+qplot(Petal.Width, Sepal.Width, colour = Species, data = training)
+```
+
+```{r trees}
+modelFit <- train(Species ~ ., method = "rpart", data = training)
+print(modelFit$finalModel)
+```
+
+```{r trees-plot}
+plot(modelFit$finalModel)
+text(modelFit$finalModel, use.n = TRUE, all = TRUE, cex = .8)
+```
+
+```{r eval=FALSE}
+fancyRpartPlot(modelFit$finalModel)
+```
+
+## Bagging
+
+```{r ozone}
+ozone <- ozone[order(ozone$ozone),]
+```
+
+```{r bagged-loess}
+ll <- matrix(NA, nrow = 10, ncol = 155)
+
+for (i in 1:10) {
+    ss <- sample(1:dim(ozone)[1], replace = TRUE)
+    ozone0 <- ozone[ss,]
+    ozone0 <- ozone0[order(ozone0$ozone),]
+    loess0 <- loess(temperature ~ ozone, data = ozone0, span = 0.2)
+    ll[i, ] <- predict(loess0, newdata = data.frame(ozone = 1:155))
+}
+```
+
+```{r}
+plot(ozone$ozone, ozone$temperature, pch = 19, cex = 0.5)
+for (i in 1:10) {
+    lines(1:155, ll[i,], col = "gray", lwd = 2)
+}
+lines(1:155, apply(ll, 2, mean), col = "red", lwd = 2)
+```
+
+## Random forests
+
+```{r iris-rf}
+inTrain <- createDataPartition(
+    y = iris$Species,
+    p = 0.7,
+    list = FALSE
+)
+
+training <- iris[inTrain,]
+testing <- iris[-inTrain,]
+```
+
+```{r iris-rf-model}
+modFit <- train(Species ~ ., data = training, method = "rf", prox = TRUE)
+modFit
+```
+
+```{r}
+getTree(modFit$finalModel, k = 2)
+```
+
+```{r class-centers}
+irisP <- classCenter(training[,c(3, 4)], training$Species, modFit$finalModel$prox)
+irisP <- as.data.frame(irisP)
+irisP$Species <- rownames(irisP)
+p <- qplot(Petal.Width, Petal.Length, col = Species, data = training)
+p + geom_point(aes(Petal.Width, Petal.Length, col = Species), size = 5, shape = 4, data = irisP)
+```
+
+```{r rf-predict}
+pred <- predict(modFit, testing)
+testing$predRight <- pred == testing$Species
+table(pred, testing$Species)
+```
+
+```{r}
+qplot(Petal.Width, Petal.Length, colour = predRight, data = testing)
+```
+
+## Boosting
+
+```{r}
+Wage <- subset(Wage, select = -c(logwage))
+inTrain <- createDataPartition(
+    y = Wage$wage,
+    p = 0.7,
+    list = FALSE
+)
+training <- Wage[inTrain,]
+testing <- Wage[-inTrain,]
+```
+
+```{r}
+modFit <- train(wage ~., method = "gbm", data = training, verbose = FALSE)
+print(modFit)
+```
+
+```{r}
+qplot(predict(modFit, testing), wage, data = testing)
+```
+
+## Model based prediction
+
+```{r}
+inTrain <- createDataPartition(
+    y = iris$Species,
+    p = 0.7,
+    list = FALSE
+)
+
+training <- iris[inTrain,]
+testing <- iris[-inTrain,]
+```
+
+```{r}
+modlda <- train(Species ~ ., data = training, method = "lda")
+modnb <- train(Species ~ ., data = training, method = "nb")
+plda <- predict(modlda, testing)
+pnb <- predict(modnb, testing)
+
+table(plda, pnb)
+```
+
+Using Naive Bayes gives very similar predictions to linear discriminant analysis.

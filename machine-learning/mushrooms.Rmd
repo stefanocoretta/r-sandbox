@@ -1,0 +1,45 @@
+---
+title: "Mushrooms"
+author: "Stefano Coretta"
+date: "10/12/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(caret)
+theme_set(theme_minimal())
+```
+
+```{r}
+mushrooms <- read_csv("./data/mushrooms.csv")
+```
+
+```{r}
+set.seed(8788)
+
+in_train <- createDataPartition(
+    y = mushrooms$class,
+    p = 0.75,
+    list = FALSE
+)
+
+mush_train <- slice(mushrooms, in_train)
+mush_test <- slice(mushrooms, -in_train)
+```
+
+```{r}
+mush_train %>%
+    ggplot(aes(class)) +
+    geom_bar() +
+    facet_grid(`stalk-shape` ~ `gill-size`)
+```
+
+```{r}
+mush_train %>%
+    ggplot(aes(`cap-color`)) +
+    geom_bar() +
+    facet_grid(. ~ class)
+```
+

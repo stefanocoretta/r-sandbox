@@ -1,0 +1,104 @@
+---
+title: "LOTR"
+author: "Stefano Coretta"
+date: "04/12/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(caret)
+# library(syllable)
+library(stringi)
+library(ggdendro)
+```
+
+```{r}
+cv_pattern <- function(string) {
+    n_char <- nchar(string)
+    split <- str_split(string, "")[[1]]
+    pattern <- ""
+    for (char in 1:n_char) {
+        if (split[char] %in% c("a", "e", "i", "o", "u")) {
+            pattern <- paste0(pattern, "V")
+        } else {
+            pattern <- paste0(pattern, "C")
+        }
+    }
+    return(pattern)
+}
+```
+
+
+```{r}
+lotr <- read_csv("data/characters_data.csv") %>%
+    mutate(
+        first_name = gsub("\\s.+", "", name),
+        n_char = nchar(first_name),
+        suffix = substr(first_name, nchar(first_name) - 1, nchar(first_name)),
+        cv = sapply(tolower(stri_trans_general(first_name, "Latin-ASCII")), cv_pattern, USE.NAMES = FALSE),
+        n_syl = str_count(cv, "V")
+    )
+```
+
+
+```{r}
+set.seed(8788)
+
+training_index <- createDataPartition(
+    lotr$race,
+    p = 0.7,
+    list = FALSE
+)
+
+training <- lotr %>%
+    slice(training_index)
+
+testing <- lotr %>%
+    slice(-training_index)
+```
+
+```{r}
+training %>%
+    ggplot(aes(race, n_char)) +
+    geom_boxplot()
+```
+
+```{r}
+dendro <- train(race ~ suffix, data = lotr, method = "rpart")
+```
+
+```{r}
+dendro_df <- dendro_data(dendro$finalModel)
+```
+
+```{r}
+ggplot() + 
+    geom_segment(data = dendro_df$segments, 
+                 aes(x = x, y = y, xend = xend, yend = yend)) + 
+    geom_text(data = dendro_df$labels, 
+              aes(x = x, y = y, label = label), size = 3, vjust = 0) +
+    geom_text(data = dendro_df$leaf_labels, 
+              aes(x = x, y = y, label = label), size = 3, vjust = 1) +
+    theme_dendro()
+```
+
+```{r}
+dendro_syl <- train(race ~ cv, data = lotr, method = "rpart")
+```
+
+```{r}
+dendro_df <- dendro_data(dendro_syl$finalModel)
+```
+
+```{r}
+ggplot() + 
+    geom_segment(data = dendro_df$segments, 
+                 aes(x = x, y = y, xend = xend, yend = yend)) + 
+    geom_text(data = dendro_df$labels, 
+              aes(x = x, y = y, label = label), size = 3, vjust = 0) +
+    geom_text(data = dendro_df$leaf_labels, 
+              aes(x = x, y = y, label = label), size = 3, vjust = 1) +
+    theme_dendro()
+```
