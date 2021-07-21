@@ -1,25 +1,49 @@
-# CRAN ----
+packages <- c(
+  # CRAN ----
 
-library(bayesplot)
-library(blogdown)
-library(bookdown)
-library(brms)
-library(extraDistr)
-library(HDInterval)
-library(here)
-library(logger)
-library(sf)
-library(tidybayes)
-library(tidyverse)
-library(xaringan)
-library(xaringanthemer)
+  "bayesplot",
+  "blogdown",
+  "bookdown",
+  "brms",
+  "devtools",
+  "extraDistr",
+  "ggdark",
+  "ggdist",
+  "HDInterval",
+  "here",
+  "logger",
+  "remotes",
+  "rgdal",
+  "rgeos",
+  "rnaturalearth",
+  "rmarkdown",
+  "rstan",
+  "sf",
+  "shiny",
+  "sjPlot",
+  "sp",
+  "svglite",
+  "tidybayes",
+  "tidyverse",
+  "Unicode",
+  "visdat",
+  "waffle",
+  "wesanderson",
+  "xaringan",
+  "xaringanthemer",
 
-# GitHub ----
+  # GitHub ----
 
-library(gadenbuie/xaringanExtra)
+  "gadenbuie/xaringanExtra",
+  "ropensci/rnaturalearthdata",
+  "ropensci/rnaturalearthhires",
+  "stan-dev/cmdstanr",
 
-# Mine ----
+  # Mine ----
 
-library(speakr)
-library(tidymv)
-library(rticulate)
+  "rticulate",
+  "speakr",
+  "tidymv"
+)
+
+renv::install(packages)
