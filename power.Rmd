@@ -1,0 +1,73 @@
+---
+title: "CI width power analysis"
+author: "Stefano Coretta"
+date: "04/05/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+theme_set(theme_minimal())
+```
+
+# Functions
+
+```{r define-funs}
+estimate_obs_n <- function(se, obs_n, width, divide = 1) {
+  new_obs_n <- (((sqrt(obs_n) * se) / (width/4))^2) / divide
+  return(new_obs_n)
+}
+
+get_obs_range <- function(se, obs_n, max_width, divide = 1, by = 1, min_width = 1) {
+  obs_range <- NULL
+  for (i in seq(min_width, max_width, by)) {
+    obs_range <- c(obs_range, estimate_obs_n(se, obs_n, i, divide))
+  }
+  return(obs_range)
+}
+
+plot_obs_range <- function(se, obs_n, max_width, divide = 1, by = 1, min_width = 1) {
+  obs_range <- get_obs_range(se, obs_n, max_width, divide, by, min_width)
+
+  ggplot2::ggplot() +
+    aes(x = seq(min_width, max_width, by), y = obs_range) +
+    geom_point() +
+    geom_path() +
+    labs(
+      caption = paste0("SE = ", se, ", ", obs_n, " obs"),
+      x = "CI width",
+      y = paste0("Estimated N ", "(N/", divide, ")")
+    )
+}
+```
+
+```{r rr}
+plot_obs_range(4.06, 1800, 20, min_width = 5)
+plot_obs_range(4.06, 1800, 20, divide = 120, min_width = 5) +
+  scale_y_continuous(breaks = seq(0, 200, 25))
+```
+
+```{r vowel}
+plot_obs_range(5.16, 1800, 20, min_width = 5)
+plot_obs_range(5.16, 1800, 20, divide = 120, min_width = 5) +
+  scale_y_continuous(breaks = seq(0, 250, 25))
+```
+
+```{r rel-gons}
+plot_obs_range(6.68, 850, 15, min_width = 5)
+plot_obs_range(6.68, 850, 15, divide = 144, min_width = 5) +
+  scale_y_continuous(breaks = seq(0, 200, 25))
+```
+
+```{r cross-ling}
+plot_obs_range(5.83, 1244, 20, min_width = 5)
+plot_obs_range(5.83, 1244, 20, divide = 120, min_width = 5) +
+  scale_y_continuous(breaks = seq(0, 250, 25))
+```
+
+```{r mono-di}
+plot_obs_range(6.7, 1800, 20, min_width = 5)
+plot_obs_range(6.7, 1800, 20, divide = 120, min_width = 5) +
+  scale_y_continuous(breaks = seq(0, 500, 25))
+```
