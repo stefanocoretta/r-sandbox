@@ -11,6 +11,7 @@ packages <- c(
   "ggdist",
   "HDInterval",
   "here",
+  "leaflet",
   "logger",
   "remotes",
   "rgdal",
