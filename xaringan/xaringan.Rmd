@@ -1,0 +1,71 @@
+---
+title: "Presentation Ninja"
+subtitle: "⚔<br/>with xaringan"
+author: "Yihui Xie"
+institute: "RStudio, PBC"
+date: "2016/12/12 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: rainbow
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(tidyverse)
+theme_set(theme_minimal(base_size = 16))
+load("harry_potter.rda")
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Test
+
+```{r plot, fig.align='center', out.height="500px", dpi=300}
+harry_potter %>%
+  ggplot(aes(element, fill = house)) +
+  geom_bar(position = "dodge") +
+  theme(legend.position = "bottom")
+```
+
+---
+
+# Test
+
+```{r plot-4, fig.align='center', out.height="400px", dpi=300, fig.dim=c(7, 5)}
+harry_potter %>%
+  ggplot(aes(element, fill = house)) +
+  geom_bar(position = "dodge") +
+  theme(legend.position = "bottom")
+```
+
+---
+
+```{r plot-2, fig.align='center', fig.asp=0.5, dpi=300}
+harry_potter %>%
+  ggplot(aes(element, fill = house)) +
+  geom_bar(position = "dodge") +
+  theme(legend.position = "bottom")
+```
+
+---
+
+```{r plot-3, fig.align='center', fig.asp=0.5, out.height="900px", dpi=300}
+harry_potter %>%
+  ggplot(aes(element, fill = house)) +
+  geom_bar(position = "dodge") +
+  theme(legend.position = "bottom")
+```
+
+---
+
+# Test 2
+
+```{r p-2, eval=FALSE, echo=TRUE}
+harry_potter %>%
+  ggplot(aes(element, fill = house)) +
+  geom_bar(position = "dodge") +
+  theme(legend.position = "bottom")
+```
