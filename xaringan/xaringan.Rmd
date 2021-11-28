@@ -11,6 +11,7 @@ output:
       highlightStyle: rainbow
       highlightLines: true
       countIncrementalSlides: false
+      ratio: 16:9
 ---
 
 ```{r setup, include=FALSE}
@@ -18,12 +19,22 @@ options(htmltools.dir.version = FALSE)
 library(tidyverse)
 theme_set(theme_minimal(base_size = 16))
 load("harry_potter.rda")
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, dpi = 300)
 ```
 
-# Test
+# Defaults
 
-```{r plot, fig.align='center', out.height="500px", dpi=300}
+72 dpi
+
+Figure width and height 7in. In inches, numeric.
+
+Out width and height are the dimensions on the document which can be different from the real figure dimensions. These are in px, character: `out.width="700px"`.
+
+---
+
+# Out height 500px, dpi 300
+
+```{r plot, fig.align='center', out.height="500px"}
 harry_potter %>%
   ggplot(aes(element, fill = house)) +
   geom_bar(position = "dodge") +
@@ -32,9 +43,9 @@ harry_potter %>%
 
 ---
 
-# Test
+# Out height 400px, dpi 300, 7*5 in
 
-```{r plot-4, fig.align='center', out.height="400px", dpi=300, fig.dim=c(7, 5)}
+```{r plot-4, fig.align='center', out.height="400px", fig.dim=c(7, 5)}
 harry_potter %>%
   ggplot(aes(element, fill = house)) +
   geom_bar(position = "dodge") +
@@ -43,7 +54,9 @@ harry_potter %>%
 
 ---
 
-```{r plot-2, fig.align='center', fig.asp=0.5, dpi=300}
+# Aspect 0.5, dpi 300
+
+```{r plot-2, fig.align='center', fig.asp=0.5}
 harry_potter %>%
   ggplot(aes(element, fill = house)) +
   geom_bar(position = "dodge") +
@@ -52,7 +65,9 @@ harry_potter %>%
 
 ---
 
-```{r plot-3, fig.align='center', fig.asp=0.5, out.height="900px", dpi=300}
+# Aspect 0.5, out height 400px, dpi 300
+
+```{r plot-3, fig.align='center', fig.asp=0.5, out.height="400px"}
 harry_potter %>%
   ggplot(aes(element, fill = house)) +
   geom_bar(position = "dodge") +
@@ -61,7 +76,29 @@ harry_potter %>%
 
 ---
 
-# Test 2
+# Aspect 0.5, out height 400px, dpi 72
+
+```{r plot-13, fig.align='center', dpi=72, fig.asp=0.5, out.height="400px"}
+harry_potter %>%
+  ggplot(aes(element, fill = house)) +
+  geom_bar(position = "dodge") +
+  theme(legend.position = "bottom")
+```
+
+---
+
+# Out widht 100px, out height 400px, dpi 300
+
+```{r plot-7, fig.align='center', out.width="100px", out.height="400px"}
+harry_potter %>%
+  ggplot(aes(element, fill = house)) +
+  geom_bar(position = "dodge") +
+  theme(legend.position = "bottom")
+```
+
+---
+
+# Echo
 
 ```{r p-2, eval=FALSE, echo=TRUE}
 harry_potter %>%

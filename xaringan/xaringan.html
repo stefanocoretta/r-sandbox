@@ -16,34 +16,60 @@ class: center, middle, inverse, title-slide
 ## ⚔<br/>with xaringan
 ### Yihui Xie
 ### RStudio, PBC
-### 2016/12/12 (updated: 2021-11-15)
+### 2016/12/12 (updated: 2021-11-28)
 
 ---
 
 
 
 
-# Test
+# Defaults
+
+72 dpi
+
+Figure width and height 7in. In inches, numeric.
+
+Out width and height are the dimensions on the document which can be different from the real figure dimensions. These are in px, character: `out.width="700px"`.
+
+---
+
+# Out height 500px, dpi 300
 
 &lt;img src="xaringan_files/figure-html/plot-1.png" height="500px" style="display: block; margin: auto;" /&gt;
 
 ---
 
-# Test
+# Out height 400px, dpi 300, 7*5 in
 
 &lt;img src="xaringan_files/figure-html/plot-4-1.png" height="400px" style="display: block; margin: auto;" /&gt;
 
 ---
 
+# Aspect 0.5, dpi 300
+
 &lt;img src="xaringan_files/figure-html/plot-2-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
-&lt;img src="xaringan_files/figure-html/plot-3-1.png" height="900px" style="display: block; margin: auto;" /&gt;
+# Aspect 0.5, out height 400px, dpi 300
+
+&lt;img src="xaringan_files/figure-html/plot-3-1.png" height="400px" style="display: block; margin: auto;" /&gt;
 
 ---
 
-# Test 2
+# Aspect 0.5, out height 400px, dpi 72
+
+&lt;img src="xaringan_files/figure-html/plot-13-1.png" height="400px" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Out widht 100px, out height 400px, dpi 300
+
+&lt;img src="xaringan_files/figure-html/plot-7-1.png" width="100px" height="400px" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Echo
 
 
 ```r
@@ -58,7 +84,8 @@ harry_potter %&gt;%
 <script>var slideshow = remark.create({
 "highlightStyle": "rainbow",
 "highlightLines": true,
-"countIncrementalSlides": false
+"countIncrementalSlides": false,
+"ratio": "16:9"
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
