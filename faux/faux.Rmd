@@ -1,0 +1,17 @@
+---
+title: "Faux"
+author: "Stefano Coretta"
+date: "03/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(faux)
+```
+
+```{r}
+
+```
+
