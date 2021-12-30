@@ -1,0 +1,12 @@
+- lemma: chuk
+  morph_type: root
+  allomorphs:
+  - morph: chuk
+    ph: tʃʊk
+  - morph: chök
+    ph: tʃøk
+- lemma: -ta
+  morph_type: suffix
+  allomorphs:
+  - morph: ta
+    ph: tɑ

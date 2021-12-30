@@ -1,0 +1,23 @@
+[
+  {
+    "lemma": ["chuk"],
+    "morph_type": ["root"],
+    "allomorphs": [
+      {
+        "spelling": ["chuk"]
+      },
+      {
+        "spelling": ["chök"]
+      }
+    ]
+  },
+  {
+    "lemma": ["-ta"],
+    "morph_type": ["suffix"],
+    "allomorphs": [
+      {
+        "spelling": ["ta"]
+      }
+    ]
+  }
+]
