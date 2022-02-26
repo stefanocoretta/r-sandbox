@@ -2327,6 +2327,22 @@
         "vctrs"
       ]
     },
+    "tidymv": {
+      "Package": "tidymv",
+      "Version": "3.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6ac448b990311924f4561df6aee9b6a9",
+      "Requirements": [
+        "dplyr",
+        "ggplot2",
+        "magrittr",
+        "mgcv",
+        "rlang",
+        "tibble",
+        "tidyr"
+      ]
+    },
     "tidyr": {
       "Package": "tidyr",
       "Version": "1.1.4",
