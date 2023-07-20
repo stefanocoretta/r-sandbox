@@ -1,0 +1,242 @@
+---
+title: "BRM non-linear syntax"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(brms)
+library(truncdist)
+library(tidybayes)
+library(coretta2018itapol)
+data("token_measures")
+
+token_measures <- token_measures %>%
+  mutate(
+    lan_voi = interaction(language, c2_phonation)
+  )
+```
+
+```{r}
+bm_1 <- brm(
+  bf(
+    v1_duration ~ a,
+    a ~ 0 + c2_phonation,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(100, 100), class = b, nlpar = a, lb = 0)
+  ),
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+get_prior(
+  bf(
+    v1_duration ~ a + b * c,
+    a ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    b ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    c ~ 0 + language,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+)
+```
+
+```{r}
+qtrunc(0.975, "cauchy", a = 0, scale = 0.1)
+qtrunc(0.975, "cauchy", a = 0, scale = 0.25)
+```
+
+
+```{r}
+bm_2_priors <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c,
+    a ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    b ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    c ~ 0 + language,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(50, 50), class = b, nlpar = a, lb = 0),
+    prior(normal(50, 50), class = b, nlpar = b, lb = 0),
+    prior(normal(50, 50), class = b, nlpar = c, lb = 0),
+    prior(cauchy(0, 8), class = sd, nlpar = a),
+    prior(cauchy(0, 8), class = sd, nlpar = b),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+
+# bm_2_priors
+```
+
+```{r}
+conditional_effects(bm_2_priors, "language:c2_phonation")
+```
+
+
+```{r}
+bm_2 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c,
+    a ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    b ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    c ~ 0 + language,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(50, 50), class = b, nlpar = a, lb = 0),
+    prior(normal(50, 50), class = b, nlpar = b, lb = 0),
+    prior(normal(50, 50), class = b, nlpar = c, lb = 0),
+    prior(cauchy(0, 8), class = sd, nlpar = a),
+    prior(cauchy(0, 8), class = sd, nlpar = b),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+
+bm_2
+```
+
+```{r}
+bm_3_priors <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * language,
+    a ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    b ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(50, 100), class = b, nlpar = a, lb = 0),
+    prior(normal(0, 50), class = b, nlpar = b),
+    prior(cauchy(0, 8), class = sd, nlpar = a),
+    prior(cauchy(0, 8), class = sd, nlpar = b),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+
+bm_3_priors
+```
+
+```{r}
+conditional_effects(bm_3_priors, "language:c2_phonation")
+```
+
+
+
+```{r}
+bm_3 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * language,
+    a ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    b ~ 0 + c2_phonation + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(50, 100), class = b, nlpar = a, lb = 0),
+    prior(normal(0, 50), class = b, nlpar = b),
+    prior(cauchy(0, 8), class = sd, nlpar = a),
+    prior(cauchy(0, 8), class = sd, nlpar = b),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+
+bm_3
+```
+
+```{r}
+conditional_effects(bm_3, "language:c2_phonation")
+```
+
+```{r}
+bm_4_priors <- brm(
+  bf(
+    v1_duration ~ 0 + a,
+    a ~ 0 + lan_voi + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(0, 500), class = b, nlpar = a, lb = 0),
+    prior(cauchy(0, 8), class = sd, nlpar = a),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+
+bm_4_priors
+```
+```{r}
+conditional_effects(bm_4_priors)
+```
+
+```{r}
+bm_4 <- brm(
+  bf(
+    v1_duration ~ 0 + a,
+    a ~ 0 + lan_voi + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(0, 500), class = b, nlpar = a, lb = 0),
+    prior(cauchy(0, 8), class = sd, nlpar = a),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+
+bm_4
+```
+```{r}
+conditional_effects(bm_4, "lan_voi")
+```
+
+```{r}
+gather_draws(bm_4, `b_a_.*`, regex = TRUE) %>%
+  compare_levels(.value, by = .variable) %>%
+  median_qi()
+```
+
