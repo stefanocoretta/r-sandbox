@@ -240,3 +240,309 @@ gather_draws(bm_4, `b_a_.*`, regex = TRUE) %>%
   median_qi()
 ```
 
+```{r}
+bm_5 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language,
+    b ~ 0 + language,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(0, 500), class = b, nlpar = a, lb = 0),
+    prior(normal(0, 50), class = b, nlpar = b),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_5
+```
+
+```{r}
+bm_5_fit <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language,
+    b ~ 0 + language,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(0, 500), class = b, nlpar = a, lb = 0),
+    prior(normal(0, 50), class = b, nlpar = b),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_5_fit
+```
+
+
+```{r}
+conditional_effects(bm_5, "language:c2_phonation")
+```
+
+```{r}
+bm_5a <- brm(
+  v1_duration ~ language * c2_phonation,
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(0, 500), class = Intercept, lb = 0),
+    prior(normal(0, 500), class = b, coef = c2_phonationvoiceless),
+    prior(normal(0, 500), class = b, coef = languagePolish),
+    prior(normal(0, 500), class = b, coef = `languagePolish:c2_phonationvoiceless`),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+conditional_effects(bm_5a, "language:c2_phonation")
+```
+
+```{r}
+bm_5b <- brm(
+  v1_duration ~ language * c2_phonation,
+  data = token_measures,
+  family = gaussian,
+  prior = c(
+    prior(normal(0, 50), class = Intercept, lb = 0),
+    prior(normal(0, 50), class = b, coef = c2_phonationvoiceless),
+    prior(normal(0, 50), class = b, coef = languagePolish),
+    prior(normal(0, 50), class = b, coef = `languagePolish:c2_phonationvoiceless`),
+    prior(cauchy(0, 8), class = sigma)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+conditional_effects(bm_5b, "language:c2_phonation")
+```
+
+```{r}
+bm_6_prior <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language,
+    b ~ 0 + language,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = b, nlpar = a),
+    prior(normal(0, 0.5), class = b, nlpar = b),
+    prior(cauchy(0, 0.01), class = sigma)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+conditional_effects(bm_6, "language:c2_phonation")
+```
+
+```{r}
+bm_6 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language,
+    b ~ 0 + language,
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = b, nlpar = a),
+    prior(normal(0, 0.5), class = b, nlpar = b),
+    prior(cauchy(0, 0.01), class = sigma)
+  ),
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+conditional_effects(bm_6, "language:c2_phonation")
+```
+
+```{r}
+bm_7_prior <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language + (0 + c2_phonation | speaker),
+    b ~ 0 + language + (0 + c2_phonation | speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = b, nlpar = a),
+    prior(cauchy(0, 0.01), class = sd, nlpar = a),
+    prior(normal(0, 0.5), class = b, nlpar = b),
+    prior(cauchy(0, 0.01), class = sd, nlpar = b),
+    prior(cauchy(0, 0.01), class = sigma),
+    prior(lkj(2), class = cor)
+  ),
+  sample_prior = "only",
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+conditional_effects(bm_7_prior, "language:c2_phonation")
+```
+
+```{r}
+bm_7 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language + (0 + c2_phonation |p| speaker),
+    b ~ 0 + language + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = b, nlpar = a),
+    prior(cauchy(0, 0.01), class = sd, nlpar = a),
+    prior(normal(0, 0.5), class = b, nlpar = b),
+    prior(cauchy(0, 0.01), class = sd, nlpar = b),
+    prior(cauchy(0, 0.01), class = sigma),
+    prior(lkj(2), class = cor)
+  ),
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_7
+```
+
+
+```{r}
+conditional_effects(bm_7, "language:c2_phonation")
+```
+
+```{r}
+bm_8 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language + (0 + c2_phonation |p| speaker),
+    b ~ 0 + language + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  chains = 1,
+  iter = 1000,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_8
+```
+
+```{r}
+bm_9_prior <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language + (0 + c2_phonation | speaker),
+    b ~ 0 + language + (0 + c2_phonation | speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = b, nlpar = a),
+    prior(cauchy(0, 0.1), class = sd, nlpar = a),
+    prior(normal(0, 0.5), class = b, nlpar = b),
+    prior(cauchy(0, 0.1), class = sd, nlpar = b),
+    prior(cauchy(0, 0.1), class = sigma),
+    prior(lkj(2), class = cor)
+  ),
+  sample_prior = "only",
+  chains = 4,
+  threads = threading(2),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+conditional_effects(bm_9_prior, "language:c2_phonation")
+```
+
+```{r}
+bm_9 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language + (0 + c2_phonation |p| speaker),
+    b ~ 0 + language + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = b, nlpar = a),
+    prior(cauchy(0, 0.1), class = sd, nlpar = a),
+    prior(normal(0, 0.5), class = b, nlpar = b),
+    prior(cauchy(0, 0.1), class = sd, nlpar = b),
+    prior(cauchy(0, 0.1), class = sigma),
+    prior(lkj(2), class = cor)
+  ),
+  chains = 4,
+  cores = 4,
+  threads = threading(2),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_9
+```
+
+```{r}
+conditional_effects(bm_9, "language:c2_phonation")
+```
+
