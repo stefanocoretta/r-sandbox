@@ -473,8 +473,7 @@ bm_8 <- brm(
   ),
   data = token_measures,
   family = lognormal,
-  chains = 1,
-  iter = 1000,
+  cores = 4,
   threads = threading(8),
   backend = "cmdstanr"
 )
@@ -483,6 +482,11 @@ bm_8 <- brm(
 ```{r}
 bm_8
 ```
+
+```{r}
+conditional_effects(bm_8, "language:c2_phonation", re_formula = NULL)
+```
+
 
 ```{r}
 bm_9_prior <- brm(
@@ -545,4 +549,123 @@ bm_9
 ```{r}
 conditional_effects(bm_9, "language:c2_phonation")
 ```
+
+```{r}
+bm_10 <- brm(
+  v1_duration ~ language * c2_phonation + (c2_phonation | speaker),
+  data = token_measures,
+  family = lognormal,
+  cores = 4,
+  threads = threading(8),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_10
+```
+
+```{r}
+conditional_effects(bm_10, "language:c2_phonation", re_formula = NULL)
+```
+
+```{r}
+bm_11 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language + (1 | speaker),
+    b ~ 0 + language + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = b, nlpar = a),
+    prior(normal(0, 0.5), class = b, nlpar = b),
+    prior(cauchy(0, 0.1), class = sd, nlpar = b),
+    prior(cauchy(0, 0.1), class = sigma),
+    prior(lkj(2), class = cor)
+  ),
+  chains = 4,
+  cores = 4,
+  threads = threading(2),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_11
+```
+
+```{r}
+conditional_effects(bm_11, "language:c2_phonation")
+```
+
+```{r}
+bm_12 <- brm(
+  bf(
+    v1_duration ~ 0 + a + b * c2_phonation,
+    a ~ 0 + language + (1 | speaker),
+    b ~ 0 + language + (0 + c2_phonation |p| speaker),
+    nl = TRUE
+  ),
+  data = token_measures,
+  family = lognormal,
+  chains = 4,
+  cores = 4,
+  threads = threading(2),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_12
+```
+
+```{r}
+conditional_effects(bm_12, "language:c2_phonation")
+```
+
+```{r}
+bm_13 <- brm(
+  v1_duration ~ language * c2_phonation + (c2_phonation | speaker),
+  data = token_measures,
+  family = lognormal,
+  chains = 4,
+  cores = 4,
+  threads = threading(2),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_13
+```
+
+```{r}
+bm_14 <- brm(
+  v1_duration ~ language * c2_phonation + (c2_phonation | speaker),
+  data = token_measures,
+  family = lognormal,
+  prior = c(
+    prior(normal(4, 1), class = Intercept),
+    prior(normal(0, 0.5), class = b),
+    prior(cauchy(0, 0.1), class = sd),
+    prior(cauchy(0, 0.1), class = sigma),
+    prior(lkj(2), class = cor)
+  ),
+  chains = 4,
+  cores = 4,
+  threads = threading(2),
+  backend = "cmdstanr"
+)
+```
+
+```{r}
+bm_14
+```
+
+Clearly, the non-linear parametrisation is somewhat wrong since the sd for c2_phonetionvoiced is VERY LARGE with default priors but it's small with set priors. But this does not happen when using normal parametrisation (bm_13 and bm_14).
+
+
 
